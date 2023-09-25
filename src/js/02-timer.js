@@ -18,7 +18,7 @@ const options = {
   },
 };
 
-flatpickr('#datetime-picker', options);
+const datePicker = flatpickr('#datetime-picker', options);
 
 function convertMs(ms) {
   const second = 1000;
@@ -48,23 +48,32 @@ function updateTimerDisplay({ days, hours, minutes, seconds }) {
 let intervalId;
 
 function startCountdown() {
-  const selectedDate = flatpickr('#datetime-picker').selectedDates[0];
+  const startButton = document.querySelector('[data-start]');
+  const selectedDate = datePicker.selectedDates[0];
   if (!selectedDate || selectedDate <= new Date()) {
     Notiflix.Notify.failure('Please choose a date in the future');
     return;
   }
 
-  intervalId = setInterval(() => {
-    const now = new Date();
-    const remainingMs = selectedDate - now;
-    if (remainingMs <= 0) {
-      clearInterval(intervalId);
-      updateTimerDisplay({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      Notiflix.Notify.success('The countdown has ended!');
-    } else {
-      updateTimerDisplay(convertMs(remainingMs));
-    }
-  }, 1000);
+  if (startButton.textContent === 'Start') {
+    startButton.textContent = 'Stop';
+    intervalId = setInterval(() => {
+      const now = new Date();
+      const remainingMs = selectedDate - now;
+      if (remainingMs <= 0) {
+        clearInterval(intervalId);
+        updateTimerDisplay({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        Notiflix.Notify.success('The countdown has ended!');
+        startButton.textContent = 'Start';
+      } else {
+        updateTimerDisplay(convertMs(remainingMs));
+      }
+    }, 1000);
+  } else {
+    clearInterval(intervalId);
+    startButton.textContent = 'Start';
+    Notiflix.Notify.warning('The countdown has stopped!');
+  }
 }
 
 document
